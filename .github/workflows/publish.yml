@@ -1,0 +1,38 @@
+name: WordPress Plugin Deployment
+
+on:
+  release:
+    types: [ created ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+
+      - name: Install Composer dependencies
+        run: composer install
+
+      - name: Build assets or perform necessary tasks
+        run: |
+          # Your build commands here
+
+      - name: Publish to Private Package Registry
+        run: |
+          # Authenticate with your private package registry
+          composer config http-basic.your-registry-url username ${{ secrets.REGISTRY_USERNAME }}
+          composer config http-basic.your-registry-url password ${{ secrets.REGISTRY_PASSWORD }}
+
+          # Publish your plugin to the private package registry
+          composer publish
