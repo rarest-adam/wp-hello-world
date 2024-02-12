@@ -177,7 +177,7 @@
 	add_filter('site_transient_update_plugins', 'misha_push_update');
 	
 	function misha_push_update ($transient) {
-		error_log('misha_push_update');
+
 		if (empty($transient->checked)) {
 			return $transient;
 		}
@@ -188,17 +188,21 @@
 				'timeout' => 10,
 				'headers' => array(
 					'Accept' => 'application/json',
-					'Authorization' => 'Bearer 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'
+					'Authorization' => 'Bearer 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'
 				)
 			)
 		);
 		
+		error_log('gettting remote');
+		
+		error_log('remote: ' . print_r($remote, true));
 		
 		if (
 			is_wp_error($remote)
 			|| 200 !== wp_remote_retrieve_response_code($remote)
 			|| empty(wp_remote_retrieve_body($remote))
 			) {
+			error_log('Error getting remote...');
 			return $transient;
 		}
 		
