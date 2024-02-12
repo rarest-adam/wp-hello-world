@@ -1,38 +1,26 @@
 name: WordPress Plugin Deployment
 
 on:
-  release:
-    types: [ created ]
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      packages: write
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '7.4'
-
-      - name: Install Composer dependencies
-        run: composer install
-
-      - name: Build assets or perform necessary tasks
-        run: |
-          # Your build commands here
-
-      - name: Publish to Private Package Registry
-        run: |
-          # Authenticate with your private package registry
-          composer config http-basic.your-registry-url username ${{ secrets.REGISTRY_USERNAME }}
-          composer config http-basic.your-registry-url password ${{ secrets.REGISTRY_PASSWORD }}
-
-          # Publish your plugin to the private package registry
-          composer publish
+    - uses: actions/checkout@master
+    
+    - name: Archive Release
+      uses: thedoctor0/zip-release@0.7.5
+      with:
+        type: 'zip'
+        filename: 'release.zip'
+        exclusions: '*.git* /*node_modules/* .editorconfig'
+        
+    - name: Upload Release
+      uses: ncipollo/release-action@v1.12.0
+      with:
+        artifacts: "release.zip"
+        token: ${{ secrets.GITHUB_TOKEN }}
