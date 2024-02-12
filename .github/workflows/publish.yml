@@ -17,6 +17,7 @@ jobs:
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.5
         with:
+          command: 'mkdir -p ${{ github.event.repository.name }}'
           type: 'zip'
           filename: "${{ github.event.repository.name }}_${{ github.ref_name }}.zip"
           exclusions: '*.git* /*node_modules/* .editorconfig'

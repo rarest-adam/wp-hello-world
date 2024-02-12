@@ -1,45 +1,19 @@
 <?php
-	/**
-	 * An example plugin for a membership course walking readers through how to work with GitHub.
-	 *
-	 * @link              https://github.com/tommcfarlin/wp-hello-world/
-	 * @since             1.0.0
-	 * @package           WPHW
-	 *
-	 * @wordpress-plugin
-	 * Plugin Name:       WordPress Hello World
-	 * Plugin URI:        https://github.com/tommcfarlin/wp-hello-world/
-	 * Description:       An example plugin for a membership course walking readers through how to
-	 * work with GitHub. Version:           1.0.0 Author:            Tom McFarlin Author URI:
-	 * https://tommcfarlin.com/ License:           GPL-2.0+ License URI:
-	 * http://www.gnu.org/licenses/gpl-2.0.txt
-	 */
+	/*
+ * Plugin name: Misha Update Checker
+ * Description: This simple plugin does nothing, only gets updates from a custom server
+ * Version: 1.0
+ * Author: Misha Rudrastyh
+ * Author URI: https://rudrastyh.com
+ * License: GPL
+ */
+	
+	/**/
 
-// If this file is called directly, abort.
-	if (!defined('WPINC')) {
-		die;
-	}
-	
-	add_filter('login_message', 'wphw_login_message');
-	/**
-	 * Adds 'Hello World' above the login form in the WordPress login form.
-	 *
-	 * @param string $message The default message to display above the form.
-	 *
-	 * @return   string $message    The message to display above the form.
-	 */
-	function wphw_login_message ($message) {
-		
-		$message = '<h2>';
-		$message .= 'Hello World!';
-		$message .= '</h2>';
-		
-		return $message;
-	}
-	
+
 	
 	defined('ABSPATH') || exit;
-	
+
 	
 	if (!class_exists('mishaUpdateChecker')) {
 		
@@ -99,7 +73,7 @@
 			
 			
 			function info ($res, $action, $args) {
-				
+				error_log('THIS IS THE START OF MY CUSTOM DEBUG info');
 				// print_r( $action );
 				// print_r( $args );
 				
@@ -122,17 +96,17 @@
 				
 				$res = new stdClass();
 				
-				$res->name           = $remote->tag_name;
-//				$res->slug           = $remote->slug;
-				$res->version        = $remote->tag_name;
+				$res->name    = $remote->tag_name;
+				$res->slug    = $remote->tag_name;
+				$res->version = $remote->tag_name;
 //				$res->tested         = $remote->tested;
 //				$res->requires       = $remote->requires;
 //				$res->author         = $remote->author;
 //				$res->author_profile = $remote->author_profile;
-				$res->download_link  = $remote->assets[0]->url;
-				$res->trunk          = $remote->assets[0]->url;
+				$res->download_link = $remote->assets[0]->browser_download_url;
+				$res->trunk         = $remote->assets[0]->browser_download_url;
 //				$res->requires_php   = $remote->requires_php;
-				$res->last_updated   = $remote->published_at;
+				$res->last_updated = $remote->published_at;
 				
 				$res->sections = array(
 					'description'  => $remote->sections->description,
@@ -197,5 +171,62 @@
 		}
 		
 		new mishaUpdateChecker();
+		
+	}
+	
+	add_filter('site_transient_update_plugins', 'misha_push_update');
+	
+	function misha_push_update ($transient) {
+		error_log('misha_push_update');
+		if (empty($transient->checked)) {
+			return $transient;
+		}
+		
+		$remote = wp_remote_get(
+			'https://api.github.com/repos/rarest-adam/wp-hello-world/releases/latest',
+			array(
+				'timeout' => 10,
+				'headers' => array(
+					'Accept' => 'application/json',
+					'Authorization' => 'Bearer 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'
+				)
+			)
+		);
+		
+		
+		if (
+			is_wp_error($remote)
+			|| 200 !== wp_remote_retrieve_response_code($remote)
+			|| empty(wp_remote_retrieve_body($remote))
+			) {
+			return $transient;
+		}
+		
+		$remote = json_decode(wp_remote_retrieve_body($remote));
+		
+		error_log('tag_name: ' . $remote->tag_name);
+		error_log('url: ' . $remote->assets[0]->browser_download_url);
+		
+		// your installed plugin version should be on the line below! You can obtain it dynamically of course
+//		if (
+//			$remote
+//			&& version_compare($this->version, $remote->version, '<')
+//			&& version_compare($remote->requires, get_bloginfo('version'), '<')
+//			&& version_compare($remote->requires_php, PHP_VERSION, '<')
+//		)
+ 		{
+			
+			$res                               = new stdClass();
+			$res->slug                         = $remote->tag_name;
+			$res->plugin                       = plugin_basename(__FILE__); // it could be just YOUR_PLUGIN_SLUG.php if your plugin doesn't have its own directory
+			$res->new_version                  = $remote->tag_name;
+//			$res->tested                       = $remote->tested;
+			$res->package                      = $remote->assets[0]->browser_download_url;;
+			$transient->response[$res->plugin] = $res;
+			
+			//$transient->checked[$res->plugin] = $remote->version;
+		}
+		
+		return $transient;
 		
 	}
