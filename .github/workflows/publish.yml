@@ -1,17 +1,19 @@
 name: WordPress Plugin Deployment
 
 on:
-  push:
-    # Sequence of patterns matched against refs/tags
-    tags:
-      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+  push
+#  push:
+#    # Sequence of patterns matched against refs/tags
+#    tags:
+#      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
-env:
-  FILE_NAME: "${{ github.event.repository.name }}_${{ github.ref_name }}.zip"
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      FILE_NAME: "${{ github.event.repository.name }}_${{ github.ref_name }}.zip"
+
     steps:
       - uses: actions/checkout@master
 
@@ -19,13 +21,13 @@ jobs:
         uses: thedoctor0/zip-release@0.7.5
         with:
           type: 'zip'
-          filename: ${{ FILE_NAME }}
+          filename: "$FILE_NAME"
           exclusions: '*.git* /*node_modules/* .editorconfig'
 
       - name: Upload Release
         uses: ncipollo/release-action@v1.12.0
         with:
-          artifacts: ${{ FILE_NAME }}
+          artifacts: "$FILE_NAME"
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: GitHub Tag Name example
