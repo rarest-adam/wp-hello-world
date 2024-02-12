@@ -36,5 +36,4 @@ function wphw_login_message( $message ) {
 	$message .= '</h2>';
 
 	return $message ;
-	// 	return 'Hello World!';
 }
