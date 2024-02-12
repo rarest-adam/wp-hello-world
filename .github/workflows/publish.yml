@@ -19,13 +19,13 @@ jobs:
         uses: thedoctor0/zip-release@0.7.5
         with:
           type: 'zip'
-          filename: $FILE_NAME
+          filename: ${{ FILE_NAME }}
           exclusions: '*.git* /*node_modules/* .editorconfig'
 
       - name: Upload Release
         uses: ncipollo/release-action@v1.12.0
         with:
-          artifacts: $FILE_NAME
+          artifacts: ${{ FILE_NAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: GitHub Tag Name example
